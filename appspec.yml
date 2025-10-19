@@ -1,0 +1,9 @@
+version: 0.0
+Resources:
+  - TargetService:
+      Type: AWS::Lambda::Function
+      Properties:
+        Name: "fetch_request_token" # actual lambda function name
+        Alias: "live" # alias that CodeDeploy will shift
+        CurrentVersion: 1
+        TargetVersion: 2

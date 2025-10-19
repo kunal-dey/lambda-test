@@ -1,0 +1,19 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+    commands:
+      - echo "Installing dependencies..."
+  build:
+    commands:
+      - echo "Packaging lambda..."
+      - zip -r function.zip main.py appspec.yml
+  post_build:
+    commands:
+      - echo "Build Completed"
+artifacts:
+  files:
+    - function.zip
+    - appspec.yml
+      
