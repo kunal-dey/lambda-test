@@ -8,12 +8,11 @@ phases:
   build:
     commands:
       - echo "Packaging lambda..."
-      - zip -r function.zip main.py appspec.yml
+      - zip -r function.zip main.py
   post_build:
     commands:
       - echo "Build Completed"
 artifacts:
   files:
     - function.zip
-    - appspec.yml
       
