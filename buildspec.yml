@@ -1,19 +1,36 @@
 version: 0.2
+
 phases:
   install:
-    runtime-versions:
-      python: 3.12
     commands:
-      - echo "Installing dependencies..."
+      - echo Installing jq
+      - yum install -y jq || true
+
   build:
     commands:
-      - echo "Packaging lambda..."
-      - zip -r function.zip main.py appspec.yml
-  post_build:
-    commands:
-      - echo "Build Completed"
+      - echo "Zipping Lambda code"
+      - zip -r function.zip main.py
+      - echo "Updating Lambda code"
+      - aws lambda update-function-code --function-name fetch_request_token --zip-file fileb://function.zip
+      - aws lambda wait function-updated --function-name fetch_request_token
+      - NEW_VERSION=$(aws lambda publish-version --function-name fetch_request_token --query "Version" --output text)
+      - echo "Finding previous version"
+      - PREV_VERSION=$(aws lambda list-versions-by-function --function-name fetch_request_token --query 'Versions[?Version!=`$LATEST`]|[-2:].Version' --output text | awk '{print $1}')
+      - if [ -z "$PREV_VERSION" ]; then PREV_VERSION=1; fi
+      - echo "Writing appspec.yml"
+      - |
+          cat > appspec.yml <<EOF
+          version: 0.0
+          Resources:
+            - TargetService:
+                Type: AWS::Lambda::Function
+                Properties:
+                  Name: fetch_request_token
+                  Alias: "live"
+                  CurrentVersion: $PREV_VERSION
+                  TargetVersion: $NEW_VERSION
+          EOF
 artifacts:
   files:
-    - function.zip
     - appspec.yml
-      
+    - function.zip

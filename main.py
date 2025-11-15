@@ -1,2 +1,2 @@
 def lambda_handler(event, context):
-    return "hello from lambda"
+    return "hello from tupu"
